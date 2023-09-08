@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "personalized-classification"
+version = "0.1.0"
+description = ""
+authors = ["Jiahui Ma <majiahui@usc.edu>"]
+readme = "README.md"
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+include = '\.pyi?$'
+exclude = '''
+(
+    \.git
+  | \.venv
+  | \.env
+  | build
+  | dist
+)/.*
+'''
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict = true
+
+[tool.flake8]
+select = ["B", "E", "F", "W", "C", "D", "I", "N", "T"]
+ignore = ["E501", "W503"]
+max-line-length = 120
+exclude = ["build", "dist", ".git", ".venv", ".eggs", "__pycache__"]
+max-complexity = 10
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+numpy = "^1.25.2"
+sklearn = "^0.0.post9"
+scipy = "^1.11.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+mypy = "^1.5.1"
+flake8 = "^6.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
