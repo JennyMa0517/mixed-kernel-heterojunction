@@ -28,7 +28,7 @@ class BayesianOptimization:
         self.x_test = x_test
         self.y_test = y_test
 
-    def __expected_improvement(self, x: NDArray[np.int64],
+    def __expected_improvement(self, x: NDArray[np.float64],
                                gaussian_process: gp.GaussianProcessRegressor,
                                sampled_loss: ArrayLike,
                                n_params: int) -> NDArray[np.float64]:
@@ -136,7 +136,7 @@ class BayesianOptimization:
         grid = np.array([[l, g, s] for l in self.lambdas for g in self.gammas
                          for s in self.scales])
 
-        for i in range(3, sampled_params.shape[0] - 1):
+        for i in range(self.init_samples, sampled_params.shape[0] - 1):
             logging.info(f"Data save: {i} begins")
             gp_model.fit(X=sampled_params[:i + 1, :], y=sampled_loss[:i + 1])
             mu = np.asarray(gp_model.predict(grid))
@@ -180,7 +180,7 @@ class BayesianOptimization:
             cross_val_score(SVC(
                 random_state=self.random_state,
                 kernel=lambda x, y: ExperimentalKernel().mixed_kernel(
-                    x, y, params[0], params[1], params[2])),
+                    x, y, params[2], params[0], params[1])),
                             X=self.x_train,
                             y=self.y_train,
                             cv=self.cv).mean())
