@@ -32,9 +32,8 @@ output_path = path.join(path.dirname(__file__), '../', 'output')
 @app.route('/')
 def read_mu() -> DataPoint:
     iter = request.args.get('iter')
-    data = genfromtxt(
-        'ei_iter25_ESSkernel/mu_3d_plot_iter_{}.csv'.format(iter),
-        delimiter=',')
+    data = genfromtxt(path.join(output_path, f'mu_3d_plot_iter_{iter}.csv'),
+                      delimiter=',')
     return {
         'x': data[:, 0].tolist(),
         'y': data[:, 1].tolist(),
@@ -46,9 +45,8 @@ def read_mu() -> DataPoint:
 @app.route('/ei')
 def read_ei() -> DataPoint:
     iter = request.args.get('iter')
-    data = genfromtxt(
-        'ei_iter25_ESSkernel/ei_3d_plot_iter_{}.csv'.format(iter),
-        delimiter=',')
+    data = genfromtxt(path.join(output_path, f'ei_3d_plot_iter_{iter}.csv'),
+                      delimiter=',')
     return {
         'x': data[:, 0].tolist(),
         'y': data[:, 1].tolist(),
@@ -60,9 +58,8 @@ def read_ei() -> DataPoint:
 @app.route('/mark')
 def read_mark() -> MarkPoint:
     iter = request.args.get('iter', 1)
-    data = genfromtxt(
-        'ei_iter25_ESSkernel/op_3d_plot_iter_{}.csv'.format(iter),
-        delimiter=',')
+    data = genfromtxt(path.join(output_path, f'op_3d_plot_iter_{iter}.csv'),
+                      delimiter=',')
     if int(iter) == 1:
         data = data.reshape((1, -1))
 
@@ -78,7 +75,7 @@ def read_min_max() -> MinMax:
     min = float('inf')
     max = float('-inf')
     for i in range(1, 25):
-        d = genfromtxt('ei_iter25_ESSkernel/mu_3d_plot_iter_{}.csv'.format(i),
+        d = genfromtxt(path.join(output_path, f'mu_3d_plot_iter_{iter}.csv'),
                        delimiter=',')
         c = d[:, 3]
         local_min = c.min()
@@ -91,4 +88,4 @@ def read_min_max() -> MinMax:
 
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(host='localhost', port=4000)

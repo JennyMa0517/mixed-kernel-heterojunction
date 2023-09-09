@@ -7,7 +7,7 @@ import { EChartsOption } from "echarts";
 export const LeftChart: FC<{ iter: number }> = ({ iter }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const client = useMemo(
-    () => axios.create({ baseURL: "http://localhost:5000" }),
+    () => axios.create({ baseURL: "http://localhost:4000" }),
     []
   );
 
