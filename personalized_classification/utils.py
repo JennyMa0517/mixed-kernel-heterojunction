@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import logging
 from numpy.typing import NDArray
 from pandas import DataFrame, concat
 from sklearn.utils import resample
@@ -16,7 +17,7 @@ class TrainData(TypedDict):
     y_test: NDArray[np.int64]
 
 
-class Common:
+class Utils:
     window_size = 160
     maximum_counting = 10000
 
@@ -43,6 +44,7 @@ class Common:
                 all_file_paths.append(full_path)
         all_file_paths.sort()
 
+        logging.info("Reading data...")
         for file_path in all_file_paths:
             filename, file_extension = path.splitext(file_path)
             if file_extension == ".txt":
@@ -146,6 +148,8 @@ class Common:
         y_train = train[train.shape[1] - 1].values
         y_test = test[test.shape[1] - 1].values
 
+        logging.info(f"Train data size: x {x_train.shape} | y {y_train.shape}")
+        logging.info(f"Test data size: x {x_test.shape} | y {y_test.shape}")
         return {
             "x_train": x_train,
             "x_test": x_test,
