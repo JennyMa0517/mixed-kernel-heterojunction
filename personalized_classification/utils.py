@@ -6,6 +6,7 @@ from sklearn.utils import resample
 from sklearn.model_selection import train_test_split
 from os import walk, path
 from typing import List, TypedDict
+from personalized_classification.static import CLASSES
 
 
 class TrainData(TypedDict):
@@ -19,7 +20,7 @@ class Common:
     window_size = 160
     maximum_counting = 10000
 
-    classes = ["N", "L", "R", "A", "V", "/"]
+    classes = CLASSES
     n_classes = len(classes)
     count_classes = [0] * n_classes
 
@@ -36,7 +37,7 @@ class Common:
         annotations: List[str] = []
 
         all_file_paths: List[str] = []
-        for dirpath, dirnames, filenames in walk(self.data_path):
+        for dirpath, _, filenames in walk(self.data_path):
             for filename in filenames:
                 full_path = path.join(dirpath, filename)
                 all_file_paths.append(full_path)
