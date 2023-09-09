@@ -75,7 +75,7 @@ def read_min_max() -> MinMax:
     min = float('inf')
     max = float('-inf')
     for i in range(1, 25):
-        d = genfromtxt(path.join(output_path, f'mu_3d_plot_iter_{iter}.csv'),
+        d = genfromtxt(path.join(output_path, f'mu_3d_plot_iter_{i}.csv'),
                        delimiter=',')
         c = d[:, 3]
         local_min = c.min()

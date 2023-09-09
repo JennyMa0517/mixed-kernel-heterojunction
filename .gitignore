@@ -161,3 +161,6 @@ cython_debug/
 
 # Experimental kernel
 experimental_kernel.py
+
+# output dir
+/output
