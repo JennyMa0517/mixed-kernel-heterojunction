@@ -1,4 +1,6 @@
+from os import path, makedirs
 import numpy as np
+import logging
 from numpy.typing import NDArray, ArrayLike
 import sklearn.gaussian_process as gp
 from scipy.stats import norm
@@ -85,11 +87,14 @@ class BayesianOptimization:
                                                normalize_y=True)
 
         for _ in range(self.iterations):
+            logging.info(f"Bayesian optimization: iteration {_} begins")
             # fit gaussian process regressor
             xp = np.array(x, dtype=float)
             yp = np.array(y, dtype=float)
+            logging.info("\tfitting gaussian process...")
             gp_model.fit(xp, yp)
 
+            logging.info("\tsampling next point...")
             # sample next point
             next_sample = np.asarray(
                 self.__sample_next(
@@ -108,6 +113,7 @@ class BayesianOptimization:
             # update
             x.append(next_sample)
             y.append(self.sample_loss(next_sample))
+            logging.info(f"Bayesian optimization: iteration {_} completes")
 
         xp = np.asarray(x, dtype=float)
         yp = np.asarray(y, dtype=float)
@@ -115,7 +121,7 @@ class BayesianOptimization:
 
     def __save(
         self, sampled_params: NDArray[np.float64],
-        sampled_loss: NDArray[np.float64]
+        sampled_loss: NDArray[np.float64], save_csv: bool, save_path: str
     ) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64],
                NDArray[np.float64]]:
         kernel = gp.kernels.ExpSineSquared()
@@ -131,22 +137,45 @@ class BayesianOptimization:
                          for s in self.scales])
 
         for i in range(3, sampled_params.shape[0] - 1):
+            logging.info(f"Data save: {i} begins")
             gp_model.fit(X=sampled_params[:i + 1, :], y=sampled_loss[:i + 1])
-            mu = gp_model.predict(grid)
+            mu = np.asarray(gp_model.predict(grid))
             ei = -1.0 * self.__expected_improvement(
                 x=grid,
                 gaussian_process=gp_model,
                 sampled_loss=sampled_loss[:i + 1],
                 n_params=3)
-            next_sample = sampled_params[i + 1, [0, 1, 2]]
+            op = sampled_params[i + 1, [0, 1, 2]]
             mu_list.append(mu)
             ei_list.append(ei)
-            op_list.append(next_sample)
+            op_list.append(op)
+            logging.info(f"Data save: {i} completes")
+
+        if save_csv:
+            logging.info("Saving data as csv...")
+            if not path.exists(save_path):
+                logging.info(f"Creating directory: {save_path}")
+                makedirs(save_path)
+
+            for j, v in enumerate(ei_list):
+                np.savetxt(path.join(save_path, f'ei_3d_plot_iter_{j+1}.csv'),
+                           np.append(grid, v.reshape((-1, 1)), axis=1),
+                           delimiter=",")
+            for j, v in enumerate(mu_list):
+                np.savetxt(path.join(save_path, f'mu_3d_plot_iter_{j+1}.csv'),
+                           np.append(grid, v.reshape((-1, 1)), axis=1),
+                           delimiter=",")
+            for j, _ in enumerate(op_list):
+                np.savetxt(path.join(save_path, f'op_3d_plot_iter_{j+1}.csv'),
+                           op_list[:j + 1],
+                           delimiter=",")
+            logging.info("Data saved as csv")
 
         return grid, np.asarray(ei_list, dtype=float), np.asarray(
             mu_list, dtype=float), np.asarray(op_list, dtype=float)
 
     def sample_loss(self, params: NDArray[np.float64]) -> ArrayLike:
+        logging.info(f"Sampling loss for params: {params}")
         return np.asarray(
             cross_val_score(SVC(
                 random_state=self.random_state,
@@ -157,12 +186,13 @@ class BayesianOptimization:
                             cv=self.cv).mean())
 
     def run(
-        self
+        self,
+        save_csv: bool = True,
+        save_path: str = path.join(path.dirname(__file__), "../", "output")
     ) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64],
                NDArray[np.float64]]:
         # execute bayesian optimization
         sampled_params, sampled_loss = self.__optimizer()
 
         # save optimization results for plotting
-        return self.__save(sampled_params=sampled_params,
-                           sampled_loss=sampled_loss)
+        return self.__save(sampled_params, sampled_loss, save_csv, save_path)
